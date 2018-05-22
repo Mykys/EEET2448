@@ -2,73 +2,88 @@
 #include <stdlib.h>
 #include <string.h>
 
-const int SIZE = 50;
+// Define a constant integer for array size
+const int SIZE = 6;
 
-int weight(float a, float b, float c){
-    if (a <= c && b >= c) {
-      return 0;
-    } else {
+// Check if weight input is within given bounds
+int weight(float lower_bound, float higher_bound, float weight) {
+    if (lower_bound <= weight && higher_bound >= weight) {
       return 1;
     }
+    return 0;
 }
-int age(int a, int b, int c){
-    if (a <= c && b >= c) {
-      return 0;
-    } else {
-      return 1;
-    }
-}
-int income(float a, float b, float c){
-    if (a <= c && b >= c) {
-      return 0;
-    } else {
-      return 1;
-    }
-}
-int name(char a[], char b[]){
- if (b[0] == '*') {return 0;}
-  int i = strlen(a);
-  int j = strlen(b);
-  int t;
 
-  for (int z = 0; z <= i - j; z++) {
-    for (int x = z; x < z + j; x++) {
-      t = 10;
-      if (a[x] != b[x - z]) {
-        t = 0;
-        break;
+// Check if age input is within given bounds
+int age(int lower_bound, int higher_bound, int age) {
+    if (lower_bound <= age && higher_bound >= age) {
+      return 1;
     }
+    return 0;
 }
-    if (t == 10) {break;}
+
+// Check if income input is within given bounds
+int income(float lower_bound, float higher_bound, float income) {
+    if (lower_bound <= income && higher_bound >= income) {
+      return 1;
+    }
+    return 0;
 }
+
+// Check if name input contains in full name
+int name(char full_name[], char input_name[]) {
+
+    if (input_name[0] == '*') {
+        return 1;
+    }
+
+    int full_length = strlen(full_name);
+    int input_length = strlen(input_name);
+    int t;
+
+    for (int i = 0; i <= full_length - input_length; i++) {
+        for (int j = i; j < i + input_length; j++) {
+            t = 10;
+            if (full_name[j] != input_name[j - i]) {
+                t = 0;
+                break;
+            }
+        }
+        if (t == 10) {
+            break;
+        }
+    }
     if (t == 10) {
-      return 0;
-  } else {
       return 1;
-  }
+    }
+  return 0;
 }
 
-
-int main(int argc, char const *argv[]) {
-
-  struct inf {
-    char student[30];
+// Define a person structure
+struct person {
+    char name[30];
     int age;
     float weight;
     float income;
-  };
-  typedef struct inf info;
-  info information[SIZE];
+};
 
-  struct k {char aria[100];};
-  typedef struct k ki;
-  ki records[SIZE];
+// Define structure to store each line from data file
+struct file_line {
+    char line[100];
+};
+
+// Define a new data types
+typedef struct person person;
+typedef struct file_line file_line;
+
+// Read X lines from file
+int readfile(char *infilename, file_line list[]) {
 
     int i = 0;
     char arr[500], ch;
 
-//read bigdata.txt
-    FILE *p = fopen("data.txt", "r");
+    // Read from bigdata.txt
+    // QUEST: Do we want to open, read and close the file everytime we read 10 lines?
+    FILE *p = fopen(infilename, "r");
 
     if (p == NULL) {
         printf("Error. File cannot be found\n");
@@ -83,73 +98,99 @@ int main(int argc, char const *argv[]) {
         }
         arr[i--] = '\0';
 
-//putting each line of data into one string
-        char *rr;
-        int l = 0;
-        const char u[3] = "\n";
-        rr = strtok(arr, u);
+        // Split each line from the file
+        char *line;
+        i = 0;
+        line = strtok(arr, "\n");
 
-        while (rr != NULL) {
-            strcpy(records[l].aria, rr);
-            l++;
-            rr = strtok(NULL, u);
+        while (line != NULL) {
+            strcpy(list[i].line, line);
+            i++;
+            line = strtok(NULL, "\n");
         }
     }
+    fclose(p);
+    return 0;
+}
 
-//putting the names together into one string
-  int z = 0;
-  char *pch;
-  char space[2] = {" "};
-  char *string[25];
-  char nam_e[30];
-  int n = 0;
-  while (z < SIZE) {
+// Insert data from X lines into an array of person structure
+void insert_data(file_line lines[], person list[]) {
 
-    pch = strtok (records[z].aria," ");
+    char *line_part, *name_part[25], full_name[30];
+    int i = 0, n = 0;
 
-    while (pch != NULL) {
-      string[n] = pch;
-        pch = strtok (NULL, " ");
-        n++;
+    // Split line into individual parts
+    while (i < SIZE) {
+        line_part = strtok(lines[i].line," ");
+
+        while (line_part != NULL) {
+            name_part[n] = line_part;
+            line_part = strtok (NULL, " ");
+            n++;
+        }
+
+        // Combine the name into one string
+        for (int j = 0; j < (n - 3); j++) {
+            strcat(full_name, name_part[j]);
+            strcat(full_name, " ");
+        }
+
+        // Populate data into person structure list
+        strcpy(list[i].name, full_name);
+        list[i].age = atoi(name_part[n-3]);
+        list[i].weight = atof(name_part[n-2]);
+        list[i].income = atof(name_part[n-1]);
+        i++;
+
+        // Reset variables
+        n = 0;
+        full_name[0] = '\0';
     }
+}
 
-    for (int j = 0; j < (n - 3); j++) {
-        strcat(nam_e, string[j]);
-        strcat(nam_e, space);
+// Search for people who fulfills the input requirements
+void search(int argc, char *argv[], person list[]) {
+
+    int from_age, to_age;
+    float from_weight, to_weight, from_income, to_income;
+
+    if (argc == 8) {
+        from_age = (argv[2][0] == '*') ? 0 : atoi(argv[2]); // ternary operator
+        to_age = (argv[3][0] == '*') ? 999 : atoi(argv[3]);
+
+        from_weight = (argv[4][0] == '*') ? 0 : atof(argv[4]);
+        to_weight = (argv[5][0] == '*') ? 999 : atof(argv[5]);
+
+        from_income = (argv[6][0] == '*') ? 0 : atof(argv[6]);
+        to_income = (argv[7][0] == '*') ? 999 : atof(argv[7]);
+
+        for (int i = 0; i < SIZE; i++) {
+            int person_name = name(list[i].name, argv[1]);
+            int person_age = age(from_age, to_age, list[i].age);
+            int person_weight = weight(from_weight, to_weight, list[i].weight);
+            int person_income = income(from_income, to_income, list[i].income);
+
+            if (person_name && person_age && person_weight && person_income) {
+                printf("%s  %i  %.2f  %.2f\n", list[i].name, list[i].age, list[i].weight, list[i].income);
+            }
+        }
+    } else {
+        printf("Incorrect number of arguments");
     }
+}
 
-//putting name, age, weight, income into a structure
-    strcpy(information[z].student,nam_e);
-    information[z].age = atof(string[n-3]);
-    information[z].weight = atof(string[n-2]);
-    information[z].income = atof(string[n-1]);
-    z++; n = 0; nam_e[0] = '\0';}
-  fclose(p);
 
-  int from_age;
-  int to_age;
-  float from_weight;
-  float to_weight;
-  float from_income;
-  float to_income;
+int main(int argc, char const *argv[]) {
 
-  if (argc == 8) {
-  if (argv[2][0] == '*') {from_age = 0;} else {from_age = atoi(argv[2]);}
-  if (argv[3][0] == '*') {to_age = 999;} else {to_age = atoi(argv[3]);}
-  if (argv[4][0] == '*') {from_weight = 0;} else {from_weight = atof(argv[4]);}
-  if (argv[5][0] == '*') {to_weight = 999;} else {to_weight = atof(argv[5]);}
-  if (argv[6][0] == '*') {from_income = 0;} else {from_income = atof(argv[6]);}
-  if (argv[7][0] == '*') {to_income = 999;} else {to_income = atof(argv[7]);}
+    // Declare arrays
+    person person_list[SIZE];
+    file_line file_line_list[SIZE];
 
-  for (z = 0; z < SIZE; z++) {
-    int a = weight(from_weight, to_weight, information[z].weight);
-    int b = age(from_age, to_age, information[z].age);
-    int c = income(from_income, to_income, information[z].income);
-    int d = name(information[z].student, argv[1]);
-    if (a == 0 && b == 0 && c == 0 && d == 0) {
-        printf("%s  %i  %.2f  %.2f\n", information[z].student, information[z].age, information[z].weight, information[z].income);}
-    }
-  }
-  else {printf("not correct");}
-  return 0;
+    readfile("smalldata.txt", file_line_list);
+
+    insert_data(file_line_list, person_list);
+
+    search(argc, argv, person_list);
+
+    return 0;
 }
