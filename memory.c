@@ -76,32 +76,50 @@ typedef struct person person;
 typedef struct file_line file_line;
 
 // Read X lines from file
-int readfile(char *infilename, file_line list[]) {
+int readfile(char *infilename, file_line list[], int start_line) {
 
-    int i = 0;
+    int i = 0, line_nbr = start_line;
     char arr[500], ch;
 
     // Read from bigdata.txt
-    // QUEST: Do we want to open, read and close the file everytime we read 10 lines?
     FILE *p = fopen(infilename, "r");
+
+    char *ptr = (char *) malloc(1000*sizeof(char));
+    if (ptr == NULL) {
+        printf("Sorry, cannot allocate that much memory");
+        return 1;
+    }
 
     if (p == NULL) {
         printf("Error. File cannot be found\n");
         return -1;
     } else {
         ch = fgetc(p);
-        arr[i] = ch;
+        //arr[i] = ch;
+        strcpy(ptr, &ch);
         while (ch != EOF) {
-            i++;
+            //i++;
             ch = fgetc(p);
-            arr[i] = ch;
+            //arr[i] = ch;
+            strcpy(ptr, &ch);
+
+            // if (ch == '\n' && line_nbr >= start_line) {
+            //     line_nbr++;
+            //     if (line_nbr <= start_line + 9) {
+            //         break;
+            //     }
+            //}
         }
-        arr[i--] = '\0';
+        //arr[i--] = '\0';
+        //ptr--;
+        //*ptr = '\0';
+        char end = '\0';
+        strcpy(ptr, &end);
 
         // Split each line from the file
         char *line;
         i = 0;
-        line = strtok(arr, "\n");
+        line = strtok(ptr, "\n");
 
         while (line != NULL) {
             strcpy(list[i].line, line);
@@ -186,7 +204,7 @@ int main(int argc, char const *argv[]) {
     person person_list[SIZE];
     file_line file_line_list[SIZE];
 
-    readfile("smalldata.txt", file_line_list);
+    readfile("smalldata.txt", file_line_list, 1);
 
     insert_data(file_line_list, person_list);
 
