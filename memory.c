@@ -3,7 +3,7 @@
 #include <string.h>
 
 // Define a constant integer for array size
-const int SIZE = 6;
+const int SIZE = 1;
 
 // Check if weight input is within given bounds
 int weight(float lower_bound, float higher_bound, float weight) {
@@ -76,50 +76,32 @@ typedef struct person person;
 typedef struct file_line file_line;
 
 // Read X lines from file
-int readfile(char *infilename, file_line list[], int start_line) {
+int readfile(char *infilename, file_line list[]) {
 
-    int i = 0, line_nbr = start_line;
+    int i = 0;
     char arr[500], ch;
 
     // Read from bigdata.txt
+    // QUEST: Do we want to open, read and close the file everytime we read 10 lines?
     FILE *p = fopen(infilename, "r");
-
-    char *ptr = (char *) malloc(1000*sizeof(char));
-    if (ptr == NULL) {
-        printf("Sorry, cannot allocate that much memory");
-        return 1;
-    }
 
     if (p == NULL) {
         printf("Error. File cannot be found\n");
         return -1;
     } else {
         ch = fgetc(p);
-        //arr[i] = ch;
-        strcpy(ptr, &ch);
+        arr[i] = ch;
         while (ch != EOF) {
-            //i++;
+            i++;
             ch = fgetc(p);
-            //arr[i] = ch;
-            strcpy(ptr, &ch);
-
-            // if (ch == '\n' && line_nbr >= start_line) {
-            //     line_nbr++;
-            //     if (line_nbr <= start_line + 9) {
-            //         break;
-            //     }
-            //}
+            arr[i] = ch;
         }
-        //arr[i--] = '\0';
-        //ptr--;
-        //*ptr = '\0';
-        char end = '\0';
-        strcpy(ptr, &end);
+        arr[i--] = '\0';
 
         // Split each line from the file
         char *line;
         i = 0;
-        line = strtok(ptr, "\n");
+        line = strtok(arr, "\n");
 
         while (line != NULL) {
             strcpy(list[i].line, line);
@@ -204,7 +186,7 @@ int main(int argc, char const *argv[]) {
     person person_list[SIZE];
     file_line file_line_list[SIZE];
 
-    readfile("smalldata.txt", file_line_list, 1);
+    readfile("smalldata.txt", file_line_list);
 
     insert_data(file_line_list, person_list);
 
