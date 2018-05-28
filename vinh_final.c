@@ -71,7 +71,7 @@ struct file_line {
     char line[100];
 };
 
-// Define a new data types
+// Define new data types
 typedef struct person person;
 typedef struct file_line file_line;
 
@@ -146,8 +146,8 @@ int search(int argc, char *argv[], person list[]) {
 
 int main(int argc, char const *argv[]) {
 
-  int i = 0;
-  char arr[50], ch;
+    int i = 0;
+    char arr[50], ch;
 
     // Declare arrays
     person person_list[SIZE];
@@ -155,37 +155,36 @@ int main(int argc, char const *argv[]) {
 
     FILE *p = fopen("bigdata.txt", "r");
 
+    // Read one line of characters at a time from file
     if (p == NULL) {
         printf("Error. File cannot be found\n");
         return -1;
     } else {
-      ch = fgetc(p);
-      arr[i] = ch;
-      while (ch != EOF) {
-
-        while (ch != '\n') {
-          i++;
-          ch = fgetc(p);
-          arr[i] = ch;
-        }
-        i++;
-        arr[i] = '\0';
-
-        strcpy(file_line_list[0].line, arr);
-
-        insert_data(file_line_list, person_list);
-
-        int res = search(argc, argv, person_list);
-
-        if (res == 0) {
-          break;
-        }
-
-        i = 0;
         ch = fgetc(p);
         arr[i] = ch;
-      }
+        while (ch != EOF) {
+            while (ch != '\n') {
+                i++;
+                ch = fgetc(p);
+                arr[i] = ch;
+            }
+            i++;
+            arr[i] = '\0';
 
+            strcpy(file_line_list[0].line, arr);
+
+            insert_data(file_line_list, person_list);
+
+            int res = search(argc, argv, person_list);
+
+            if (res == 0) {
+                break;
+            }
+
+            i = 0;
+            ch = fgetc(p);
+            arr[i] = ch;
+        }
     }
     return 0;
 }
